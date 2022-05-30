@@ -1,5 +1,5 @@
 ---
-versionFrom: 9.0.0
+versionFrom: 10.0.0
 meta.Title: "Umbraco Global Settings"
 meta.Description: "Information on the global settings section"
 ---
@@ -29,11 +29,12 @@ To make it easier to see what values are present in the global section, the foll
       "InstallMissingDatabase": false,
       "DisableElectionForSingleServer": false,
       "DatabaseFactoryServerVersion": "SqlServer.V2019",
-      "MainDomLock": "MainDomSemaphoreLock",
+      "MainDomLock": "FileSystemMainDomLock",
       "MainDomKeyDiscriminator": "",
       "Id": "184a8175-bc0b-43dd-8267-d99871eaec3d",
       "NoNodesViewPath": "~/umbraco/UmbracoWebsite/NoNodes.cshtml",
-      "SqlWriteLockTimeOut": "00:00:05",
+      "DistributedLockingReadLockDefaultTimeout": "00:01:00",
+      "DistributedLockingWriteLockDefaultTimeout": "00:00:05",
       "Smtp": {
         "From": "person@umbraco.dk",
         "Host": "localhost",
@@ -109,8 +110,6 @@ By adding this you can specify a new/different folder for storing your media fil
 
 ### Umbraco media physical root path
 
-*Available in V9.3+*
-
 By adding this you can specify a new/different folder for storing your media files elsewhere on the server. Unlike `UmbracoMediaPath`, this does not change the relative path that media is served from (e.g. /media) but allows for files to be stored **outside** of the wwwroot folder. Both relative paths (../../Shared/Media) and absolute server paths (X:/Shared/Media) are supported. For more info see [Extending filesystem](../../../Extending/FileSystemProviders/index.md)
 
 ### Install missing database
@@ -139,21 +138,14 @@ IMainDomLock is used to synchronize access to various resources e.g. Lucene inde
 
 Available options:
 
++ **FileSystemMainDomLock** - Available cross-platform, uses lock files written to LocalTempPath to control acquisition of MainDom status.
 + **MainDomSemaphoreLock** - Windows only, uses a named Semaphore with a `maximumCount` of 1 to control acquisition of MainDom status.
 + **SqlMainDomLock** - Available cross-platform, uses the database to control acquisition of MainDom status.
 
-*Available  in v9.4+*
-+ **FileSystemMainDomLock** - Available cross-platform, uses lock files written to LocalTempPath to control acquisition of MainDom status.
+The default implementation unless configured otherwise is `FileSystemMainDomLock`.
 
-The default selection is platform-specific.<br />
-On Windows, MainDomSemaphoreLock will be used unless configured otherwise.<br />
-On other platforms, SqlMainDomLock will be used unless configured otherwise.<br />
-
-Additionally, SqlMainDomLock will be used when configuration specifies MainDomSemaphoreLock on an unsupported platform.
 
 ### Main dom key discriminator
-
-*Available in V9.4+*
 
 For advanced use cases e.g. deployment slot swapping on Azure app services.
 
@@ -185,9 +177,13 @@ This setting contains a unique ID used to identify your project, and is populate
 
 This setting specifies what view to render when there is no content on the site.
 
-### Sql write lock timeout
+### Distributed Locking Read Lock Default Timeout
 
-A timespan value that represents the time to lock the database for a write operation. The setting is not mandatory, but can be used as a fix to extend the timeout if you have been seeing errors in your logs indicating that the default lock timeout is hit. The format for this setting is HH:MM:SS.
+A timespan value that represents the maximum time to wait whilst attempting to obtain a distributed read lock. The setting is not mandatory, but can be used as a fix to extend the timeout if you have been seeing errors in your logs indicating that the default lock timeout is hit. The format for this setting is HH:MM:SS.
+
+### Distributed Locking Write Lock Default Timeout
+
+A timespan value that represents the maximum time to wait whilst attempting to obtain a distributed write lock. The setting is not mandatory, but can be used as a fix to extend the timeout if you have been seeing errors in your logs indicating that the default lock timeout is hit. The format for this setting is HH:MM:SS.
 
 ## SMTP settings
 
